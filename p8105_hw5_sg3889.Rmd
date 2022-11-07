@@ -154,24 +154,77 @@ homicide %>%
 ### For Baltimore, MD
 
 ```{r}
-homicide_summary = homicide %>% 
-  group_by(city_state) %>% 
+summary = homicide %>% 
+  filter(city_state == "Baltimore, MD") %>% 
   summarise(
     total_number = n(),
     unsolved_number = sum(result == "unsolved")
   )
-  
+
 baltimore_prop_test = 
   prop.test(
-    homicide_summary %>%
-      filter(city_state == "Baltimore, MD") %>% 
-      pull(unsolved_number), 
-    homicide_summary %>%
-      filter(city_state == "Baltimore, MD") %>% 
-      pull(total_number)
-    ) %>% 
-  broom::tidy()
+    summary %>% pull(unsolved_number), 
+    summary %>% pull(total_number)
+    )
+
+broom::tidy(baltimore_prop_test)
 ```
 
-The estimated proportion of unsolved homicides for the city of Baltimore, MD, is `r round(baltimore_prop_test %>% pull(estimate), digits = 3)`, with a 95% confidence interval of (`r round(baltimore_prop_test %>% pull(conf.low), digits = 3)`, `r round(baltimore_prop_test %>% pull(conf.high), digits = 3)`).
+The estimated proportion of unsolved homicides for the city of Baltimore, MD, is `r round(broom::tidy(baltimore_prop_test) %>% pull(estimate), digits = 3)`, with a 95% confidence interval of (`r round(broom::tidy(baltimore_prop_test) %>% pull(conf.low), digits = 3)`, `r round(broom::tidy(baltimore_prop_test) %>% pull(conf.high), digits = 3)`).
+
+### Iterate on Each City
+
+Write a function `prop_test`.
+
+```{r}
+prop_test = function(df) {
+  
+  summary = 
+    df %>% 
+    summarise(
+      total_number = n(),
+      unsolved_number = sum(result == "unsolved")
+      ) 
+  
+  city_prop_test = 
+    prop.test(
+      summary %>% pull(unsolved_number), 
+      summary %>% pull(total_number)
+      ) %>% 
+    broom::tidy()
+  
+  city_prop_test
+  
+}
+```
+
+To iterate for each city, first, we'd like to nest the irrelevant columns. Then, apply the function to the nested dataframe and only keep those variables in need as `final_result` dataframe.
+
+```{r}
+homicide_nest_df = homicide %>% 
+  select(city_state, everything()) %>% 
+  nest(city_homicide = uid:result)
+
+homicide_nest_df =
+  homicide_nest_df %>% 
+  mutate(
+    city_prop_test = map(city_homicide, prop_test)
+  ) %>% 
+  unnest(city_prop_test) 
+
+final_result = 
+  homicide_nest_df %>%
+  select(city_state, estimate, conf.low, conf.high)
+```
+
+To give some illustrative examples of the `final_result` on `prop.test` for each single city, print the first 6 lines of this dataframe.
+
+```{r}
+final_result %>% 
+  head(6) %>% 
+  knitr::kable(
+    digits = 3,
+    col.names = c("City, State", "Estimated Proportion", "Lower 95% CI", "Upper 95% CI")
+  )
+```
 
