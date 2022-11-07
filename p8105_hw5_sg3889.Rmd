@@ -32,3 +32,43 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
+
+## Problem 1
+
+Start with a dataframe containing all file names.
+
+```{r}
+file_names = list.files(path = "data/problem1", full.names = TRUE)
+```
+
+Iterate over file names and read in data for each subject using `purrr::map`. The results are saved as `files`.
+
+```{r}
+files = map(file_names, read_csv)
+
+for (i in 1:20) {
+  
+  if (i < 11) {
+    
+    files[[i]] = files[[i]] %>% 
+      mutate(
+        subject_id = i,
+        arm = "Control"
+      )
+    
+  }
+  
+  else {
+    
+    files[[i]] = files[[i]] %>% 
+      mutate(
+        subject_id = i - 10,
+        arm = "Experimental"
+      )
+
+  }
+  
+}
+
+```
+
