@@ -107,6 +107,8 @@ On average, the observation values for those in experimental arm are higher than
 
 ## Problem 2
 
+### Data Description
+
 Import the data.
 
 ```{r}
@@ -114,3 +116,36 @@ homicide = read_csv("data/homicide-data.csv")
 ```
 
 The `homicide` dataset contains `r nrow(homicide)` cases, with `r ncol(homicide)` variables, mainly describing the homicide cases in `r n_distinct(homicide$city)` cities in U.S. These variables include reported date and location, some information on victim (name, race, age, and sex), and the final disposition of the homicide.
+
+### Summary on Homicides
+
+Create a `city_state` and a `result` variable. The `result` variable is used as a binary indicator of "solved" of "unsolved" status of the homicide.
+
+```{r}
+homicide = homicide %>% 
+  mutate(
+    city_state = str_c(city, ", ", state),
+    city_state = recode(city_state, "Tulsa, AL" = "Tulsa, OK"),
+    result = case_when(
+      disposition == "Closed by arrest"      ~ "solved",
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      TRUE                                   ~ ""
+    )
+  )
+```
+
+Produce a summary table of total number of homicides and the number of unsolved homicides within each city.
+
+```{r}
+homicide %>% 
+  group_by(city_state) %>% 
+  summarise(
+    total_number = n(),
+    unsolved_number = sum(result == "unsolved")
+  ) %>% 
+  knitr::kable(
+    col.names = c("City, State", "Total Number of Homicides", "Number of Unsolved Homicides")
+  )
+```
+
