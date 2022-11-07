@@ -11,7 +11,8 @@ knitr::opts_chunk$set(
 	message = FALSE,
 	warning = FALSE,
 	fig.height = 6,
-	out.width = "90%"
+	out.width = "90%",
+	dpi = 200
 )
 ```
 
@@ -321,4 +322,36 @@ re_sim_results_df =
   ) %>% 
   unnest(power_df)
 ```
+
+Make a plot showing the proportion of times the null was rejected on the y axis and the true value of $\mu$ on the x axis.
+
+```{r}
+re_sim_results_df %>% 
+  mutate(
+    decision = case_when(
+      p_value < 0.05  ~ "reject",
+      p_value >= 0.05 ~ "fail to reject",
+      TRUE            ~ ""
+    )
+  ) %>% 
+  group_by(true_mean) %>% 
+  summarise(
+    n_obs = n(),
+    prop = sum(decision == "reject") / n_obs * 100
+  ) %>% 
+  ggplot(aes(x = true_mean, y = prop)) +
+  geom_point() +
+  geom_path(alpha = .5) +
+  labs(
+    x = expression(mu),
+    y = "Proportion of Times Rejecting Null\n(%)",
+    title = "Proportion of Times the Null was Rejected vs. True Mean",
+    caption = expression(paste("Significant level: ", alpha, " = 0.05"))
+  ) + 
+  scale_x_continuous(
+    breaks = 1:6
+  )
+```
+
+As we can observe from the above scatterplot, the proportion of times the null was rejected increases as  the true mean becomes larger, indicating that the detectable effect size and power are positively correlated.
 
