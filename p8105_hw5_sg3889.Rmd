@@ -126,6 +126,7 @@ With further inspection, there is an observation from Tulsa, with a state record
 ```{r}
 homicide = homicide %>% 
   mutate(
+    state = str_to_upper(state),
     city_state = str_c(city, ", ", state),
     city_state = recode(city_state, "Tulsa, AL" = "Tulsa, OK"),
     result = case_when(
@@ -226,5 +227,39 @@ final_result %>%
     digits = 3,
     col.names = c("City, State", "Estimated Proportion", "Lower 95% CI", "Upper 95% CI")
   )
+```
+
+### Forest Plot
+
+Create a plot that shows the estimates and CIs for each city.
+
+```{r}
+estimate_ci_plot = final_result %>% 
+  mutate(
+    city_state = fct_reorder(city_state, estimate)
+  ) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  labs(
+    x = "City, State",
+    y = "Estimated Proportion of Unsolved Homicides",
+    title = "Estimated Proportion of Unsolved Homicides with 95% Confidence Interval in Each City"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    axis.title = element_text(face = "bold")
+  )
+
+ggsave(
+  estimate_ci_plot,
+  filename = "results/estimate_plot.png",
+  width = 20,
+  height = 16,
+  units = "cm",
+  bg = "white"
+)
+
+knitr::include_graphics("results/estimate_plot.png")
 ```
 
