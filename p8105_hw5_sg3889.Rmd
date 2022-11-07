@@ -103,3 +103,14 @@ result_df %>%
 ```
 
 On average, the observation values for those in experimental arm are higher than those in control arm. In addition, there seems to be some increasing over time in experimental arm, while the observation value tends to be more constant for those in control arm.
+
+
+## Problem 2
+
+Import the data.
+
+```{r}
+homicide = read_csv("data/homicide-data.csv")
+```
+
+The `homicide` dataset contains `r nrow(homicide)` cases, with `r ncol(homicide)` variables, mainly describing the homicide cases in `r n_distinct(homicide$city)` cities in U.S. These variables include reported date and location, some information on victim (name, race, age, and sex), and the final disposition of the homicide.
