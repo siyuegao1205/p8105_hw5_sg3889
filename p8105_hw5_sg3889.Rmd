@@ -171,7 +171,7 @@ baltimore_prop_test =
 broom::tidy(baltimore_prop_test)
 ```
 
-The estimated proportion of unsolved homicides for the city of Baltimore, MD, is `r round(broom::tidy(baltimore_prop_test) %>% pull(estimate), digits = 3)`, with a 95% confidence interval of (`r round(broom::tidy(baltimore_prop_test) %>% pull(conf.low), digits = 3)`, `r round(broom::tidy(baltimore_prop_test) %>% pull(conf.high), digits = 3)`).
+The estimated proportion of unsolved homicides for the city of Baltimore, MD, is **`r round(broom::tidy(baltimore_prop_test) %>% pull(estimate), digits = 3)`**, with a 95% confidence interval of **(`r round(broom::tidy(baltimore_prop_test) %>% pull(conf.low), digits = 3)`, `r round(broom::tidy(baltimore_prop_test) %>% pull(conf.high), digits = 3)`)**.
 
 ### Iterate on Each City
 
@@ -261,5 +261,34 @@ ggsave(
 )
 
 knitr::include_graphics("results/estimate_plot.png")
+```
+
+Among these 50 large U.S. cities included in the dataset, Richmond, VA, has the lowest estimated proportion of unsolved homicides, while Chicago, IL, has the highest.
+
+
+## Problem 3
+
+Write a function to pull the estimate and p-value.
+
+*   Fix n = 30
+*   Fix $\sigma$ = 5
+
+```{r}
+set.seed(1)
+
+sim_power = function(n = 30, mu, sigma = 5) {
+  
+  x = rnorm(n = n, mean = mu, sd = sigma)
+  
+  output = 
+    t.test(x, mu = 0) %>% 
+    broom::tidy()
+  
+  tibble(
+    estimate_hat = output %>% pull(estimate),
+    p_value = output %>% pull(p.value)
+  )
+  
+}
 ```
 
