@@ -292,3 +292,19 @@ sim_power = function(n = 30, mu, sigma = 5) {
 }
 ```
 
+### Set $\mu$ = 0
+
+Use list columns to achieve it. Save the $\hat{\mu}$ and p-value in `sim_results_df`.
+
+```{r, cache = TRUE}
+sim_results_df = 
+  expand_grid(
+    true_mean = 0,
+    iteration = 1:5000
+  ) %>% 
+  mutate(
+    power_df = map(.x = true_mean, ~ sim_power(mu = .x))
+  ) %>% 
+  unnest(power_df)
+```
+
