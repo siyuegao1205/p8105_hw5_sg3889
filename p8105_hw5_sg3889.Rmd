@@ -323,15 +323,15 @@ re_sim_results_df =
   unnest(power_df)
 ```
 
-*   Make a plot showing the proportion of times the null was rejected on the y axis and the true value of $\mu$ on the x axis.
+*   Make a plot showing the proportion of times the null is rejected on the y axis and the true value of $\mu$ on the x axis.
 
 ```{r}
 re_sim_results_df %>% 
   mutate(
     decision = case_when(
-      p_value < 0.05  ~ "reject",
-      p_value >= 0.05 ~ "fail to reject",
-      TRUE            ~ ""
+      p_value <= 0.05  ~ "reject",
+      p_value > 0.05   ~ "fail to reject",
+      TRUE             ~ ""
     )
   ) %>% 
   group_by(true_mean) %>% 
@@ -345,7 +345,7 @@ re_sim_results_df %>%
   labs(
     x = expression(mu),
     y = "Proportion of Times Rejecting Null\n(%)",
-    title = expression(paste("Proportion of Times the Null was Rejected vs. True Value of ", mu)),
+    title = expression(paste("Proportion of Times the Null is Rejected vs. True Value of ", mu)),
     caption = expression(paste("Significant level: ", alpha, " = 0.05"))
   ) + 
   scale_x_continuous(
@@ -353,7 +353,7 @@ re_sim_results_df %>%
   )
 ```
 
-As we can observe from the above scatterplot, the proportion of times the null was rejected increases as  the true mean becomes larger, indicating that the detectable effect size and power are positively correlated.
+As we can observe from the above scatterplot, the proportion of times the null is rejected increases as  the true mean becomes larger, indicating that the detectable effect size and power are positively correlated.
 
 *   Make a plot showing the average estimate of $\hat{\mu}$ on the y axis and the true value of $\mu$ on the x axis.
 
@@ -365,15 +365,61 @@ re_sim_results_df %>%
   ) %>% 
   ggplot(aes(x = true_mean, y = mean_estimate)) +
   geom_point() +
-  #geom_path(alpha = .5) +
   labs(
     x = expression(mu),
-    y = "Average Estimate",
-    title = expression(paste("Average Estimate of ", hat(mu), " vs. True Value of ", mu)),
-    caption = expression(paste("Significant level: ", alpha, " = 0.05"))
+    y = expression(paste("Average Estimate of ", hat(mu))),
+    title = expression(paste("Average Estimate of ", hat(mu), " vs. True Value of ", mu))
   ) + 
   scale_x_continuous(
     breaks = 1:6
   )
 ```
+
+*   Make a second plot showing the average of $\hat{\mu}$ only in samples for which the null is rejected on the y axis and the true value of $\mu$ on the x axis. Overlay it on the previous plot.
+
+```{r}
+re_sim_results_df %>% 
+  mutate(
+    decision = case_when(
+      p_value <= 0.05  ~ "reject",
+      p_value > 0.05   ~ "fail to reject",
+      TRUE             ~ ""
+    ),
+    estimate_hat_rej = ifelse(decision == "reject", estimate_hat, NA_real_)
+  ) %>% 
+  group_by(true_mean) %>% 
+  summarise(
+    mean_estimate = mean(estimate_hat),
+    mean_reject = mean(estimate_hat_rej, na.rm = TRUE)
+  ) %>% 
+  pivot_longer(
+    mean_estimate:mean_reject,
+    names_to = "group",
+    names_prefix = "mean_",
+    values_to = "estimate"
+  ) %>% 
+  mutate(
+    group = str_replace(group, "estimate", "all")
+  ) %>% 
+  ggplot(aes(x = true_mean, y = estimate, color = group)) +
+  geom_point() +
+  geom_path(alpha = .5) +
+  labs(
+    x = expression(mu),
+    y = expression(paste("Average Estimate of ", hat(mu))),
+    title = expression(paste("Average Estimate of ", hat(mu), " vs. True Value of ", mu)),
+    caption = expression(paste("Significant level: ", alpha, " = 0.05"))
+  ) + 
+  scale_colour_discrete(
+    name = "",
+    labels = c("All Samples", "Rejected Samples")
+  ) +
+  scale_x_continuous(
+    breaks = 1:6
+  )
+```
+
+When $\mu$ = {1, 2}, the sample average of $\hat{\mu}$ across tests for which the null is rejected is not approximately equal to the true value of $\mu$. However, the difference becomes smaller when the true value of $\mu$ increases, i.e., the sample average is becoming closer and closer to the true value, and is approximately the same as the true value when $\mu$ = {4, 5, 6}.
+
+It can be explained by the fact that when the effect size is relatively small, the power is low, and fewer samples are rejected, leading to a larger average estimate compared to the true value. As the effect size increases, the power increases as well, and there are more rejected samples where the $\hat{\mu}$ of these samples is significantly different than 0 and closer to the true value of $\mu$. In this way, it's reasonable that the average of these rejected samples will be approximately equal to the true value of $\mu$.
 
