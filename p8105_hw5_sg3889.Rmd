@@ -121,6 +121,8 @@ The `homicide` dataset contains `r nrow(homicide)` cases, with `r ncol(homicide)
 
 Create a `city_state` and a `result` variable. The `result` variable is used as a binary indicator of "solved" of "unsolved" status of the homicide.
 
+With further inspection, there is an observation from Tulsa, with a state recorded as "AL". Tulsa is located in Oklahoma, and this observation might be an entry error. Thus, I re-coded it as "Tulsa, OK".
+
 ```{r}
 homicide = homicide %>% 
   mutate(
@@ -148,4 +150,28 @@ homicide %>%
     col.names = c("City, State", "Total Number of Homicides", "Number of Unsolved Homicides")
   )
 ```
+
+### For Baltimore, MD
+
+```{r}
+homicide_summary = homicide %>% 
+  group_by(city_state) %>% 
+  summarise(
+    total_number = n(),
+    unsolved_number = sum(result == "unsolved")
+  )
+  
+baltimore_prop_test = 
+  prop.test(
+    homicide_summary %>%
+      filter(city_state == "Baltimore, MD") %>% 
+      pull(unsolved_number), 
+    homicide_summary %>%
+      filter(city_state == "Baltimore, MD") %>% 
+      pull(total_number)
+    ) %>% 
+  broom::tidy()
+```
+
+The estimated proportion of unsolved homicides for the city of Baltimore, MD, is `r round(baltimore_prop_test %>% pull(estimate), digits = 3)`, with a 95% confidence interval of (`r round(baltimore_prop_test %>% pull(conf.low), digits = 3)`, `r round(baltimore_prop_test %>% pull(conf.high), digits = 3)`).
 
