@@ -94,16 +94,18 @@ Make a spaghetti plot showing observations on each subject over time, and commen
 ```{r}
 result_df %>% 
   ggplot(aes(x = week, y = observation, type = subject_id, color = arm)) +
-  geom_line() +
+  geom_point() +
+  geom_path() +
   labs(
     x = "Week",
     y = "Observation Values",
     color = "Arm",
     title = "Observations on each subject over time by study arm"
-  )
+  ) +
+  facet_grid(. ~ arm)
 ```
 
-On average, the observation values for those in experimental arm are higher than those in control arm. In addition, there seems to be some increasing over time in experimental arm, while the observation value tends to be more constant for those in control arm.
+This plot suggests high within-subject correlation – subjects who start above average end up above average, and those that start below average end up below average. On average, the observation values for those in experimental arm are higher than those in control arm. In addition, there seems to be some increase in a roughly linear way over time for those in experimental arm, while the observation value tends to be more constant for those in control arm.
 
 
 ## Problem 2
