@@ -172,10 +172,9 @@ baltimore_prop_test =
     )
 
 broom::tidy(baltimore_prop_test) %>% 
-  select(estimate, conf.low, conf.high) %>% 
+  select("Estimate Proportion" = estimate, "Lower 95% CI" = conf.low, "Upper 95% CI" = conf.high) %>% 
   knitr::kable(
-    digits = 3,
-    col.names = c("Estimated Proportion", "Lower 95% CI", "Upper 95% CI")
+    digits = 3
   )
 ```
 
