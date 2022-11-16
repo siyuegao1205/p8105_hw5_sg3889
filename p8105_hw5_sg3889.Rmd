@@ -172,7 +172,7 @@ baltimore_prop_test =
     )
 
 broom::tidy(baltimore_prop_test) %>% 
-  select("Estimate Proportion" = estimate, "Lower 95% CI" = conf.low, "Upper 95% CI" = conf.high) %>% 
+  select("Estimated Proportion" = estimate, "Lower 95% CI" = conf.low, "Upper 95% CI" = conf.high) %>% 
   knitr::kable(
     digits = 3
   )
@@ -225,11 +225,10 @@ final_result =
   select(city_state, estimate, conf.low, conf.high)
 ```
 
-To give some illustrative examples of the `final_result` on `prop.test` for each single city, print the first 6 lines of this dataframe.
+The following code chunk provides both the proportion of unsolved homicides and the confidence interval for each city.
 
 ```{r}
-final_result %>% 
-  head(6) %>% 
+final_result %>%
   knitr::kable(
     digits = 3,
     col.names = c("City, State", "Estimated Proportion", "Lower 95% CI", "Upper 95% CI")
@@ -301,7 +300,7 @@ sim_power = function(n = 30, mu, sigma = 5) {
 
 ### Set $\mu$ = 0
 
-Use list columns to achieve it. Save the $\hat{\mu}$ and p-value in `sim_results_df`.
+Use list columns to generate 5000 datasets and apply the `sim_power` function to each dataset. Save the $\hat{\mu}$ and p-value in `sim_results_df`.
 
 ```{r, cache = TRUE}
 sim_results_df = 
@@ -359,7 +358,7 @@ re_sim_results_df %>%
   )
 ```
 
-As we can observe from the above scatterplot, the proportion of times the null is rejected increases as  the true mean becomes larger, indicating that the detectable effect size and power are positively correlated.
+As we can observe from the above plot, the proportion of times the null is rejected increases as the true value of $\mu$ becomes larger, indicating that the detectable effect size and power are positively correlated.
 
 *   Make a plot showing the average estimate of $\hat{\mu}$ on the y axis and the true value of $\mu$ on the x axis.
 
@@ -371,6 +370,7 @@ re_sim_results_df %>%
   ) %>% 
   ggplot(aes(x = true_mean, y = mean_estimate)) +
   geom_point() +
+  geom_line() +
   labs(
     x = expression(mu),
     y = expression(paste("Average Estimate of ", hat(mu))),
@@ -427,5 +427,5 @@ re_sim_results_df %>%
 
 When $\mu$ = {1, 2}, the sample average of $\hat{\mu}$ across tests for which the null is rejected is not approximately equal to the true value of $\mu$. However, the difference becomes smaller when the true value of $\mu$ increases, i.e., the sample average is becoming closer and closer to the true value, and is approximately the same as the true value when $\mu$ = {4, 5, 6}.
 
-It can be explained by the fact that when the effect size is relatively small, the power is low, and fewer samples are rejected, leading to a larger average estimate compared to the true value. As the effect size increases, the power increases as well, and there are more rejected samples where the $\hat{\mu}$ of these samples is significantly different than 0 and closer to the true value of $\mu$. In this way, it's reasonable that the average of these rejected samples will be approximately equal to the true value of $\mu$.
+It can be explained by the fact that when the effect size is relatively small, the power is low, and fewer samples are rejected, leading to a larger average estimate among rejected samples, compared to the true value of $\mu$. As the effect size increases, the power increases as well, and there are more rejected samples where the $\hat{\mu}$ of these samples is significantly different than 0 and closer to the true value of $\mu$. In this way, it's reasonable that the average of these rejected samples will be approximately equal to the true value of $\mu$ as the effect size increases, i.e., when $\mu$ = {4, 5, 6}.
 
