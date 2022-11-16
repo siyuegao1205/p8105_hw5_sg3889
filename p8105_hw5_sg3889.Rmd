@@ -171,7 +171,12 @@ baltimore_prop_test =
     summary %>% pull(total_number)
     )
 
-broom::tidy(baltimore_prop_test)
+broom::tidy(baltimore_prop_test) %>% 
+  select(estimate, conf.low, conf.high) %>% 
+  knitr::kable(
+    digits = 3,
+    col.names = c("Estimated Proportion", "Lower 95% CI", "Upper 95% CI")
+  )
 ```
 
 The estimated proportion of unsolved homicides for the city of Baltimore, MD, is **`r round(broom::tidy(baltimore_prop_test) %>% pull(estimate), digits = 3)`**, with a 95% confidence interval of **(`r round(broom::tidy(baltimore_prop_test) %>% pull(conf.low), digits = 3)`, `r round(broom::tidy(baltimore_prop_test) %>% pull(conf.high), digits = 3)`)**.
